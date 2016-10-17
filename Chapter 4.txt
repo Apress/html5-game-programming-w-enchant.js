@@ -1,0 +1,525 @@
+Listing 4-1. Setting up for Scenes
+enchant();
+window.onload = function() {
+    //Core object creation
+    var game = new Core(320, 320);
+    game.fps = 16;
+
+    //Image loading
+    game.preload('http://enchantjs.com/assets/images/bg/bg01.jpg',
+        'http://enchantjs.com/assets/images/bg/bg02.jpg',
+        'http://enchantjs.com/assets/images/bg/bg03.jpg');
+
+    //Called when pre-loading is complete
+    game.onload = function() {
+        
+        //Background creation
+        var	bg = makeBackground(game.assets['http://enchantjs.com/assets/images/bg/bg01.jpg'])
+        game.rootScene.addChild(bg);
+        
+        //Message creation
+        game.rootScene.addChild(makeMessage("This is the root scene."));
+        
+        //Choice button creation
+        var select=makeSelect("【Move to Scene 1】", 320 - 32 * 2);
+        select.addEventListener(Event.TOUCH_START, function(e) {
+            game.pushScene(game.makeScene1());
+        });
+        game.rootScene.addChild(select);
+    };
+    
+    //Scene 1 creation
+    game.makeScene1 = function() {
+        var scene = new Scene();
+        
+        //Background creation
+        var bg = makeBackground(game.assets['http://enchantjs.com/assets/images/bg/bg02.jpg'])
+        scene.addChild(bg);
+        
+        //Message creation
+        scene.addChild(makeMessage("This is Scene 1."));
+        
+        //Choice button creation
+        var select = makeSelect("【Move to Scene 2】", 320 - 32 * 2);
+        select.addEventListener(Event.TOUCH_START, function(e) {
+            game.pushScene(game.makeScene2());            
+        });
+        scene.addChild(select);
+        scene.addChild(makeReturn(1));
+        return scene;
+    };
+    
+    //Scene 2 creation
+    game.makeScene2 = function() {
+        var scene = new Scene();
+        
+        //Background creation
+        var bg = makeBackground(game.assets['http://enchantjs.com/assets/images/bg/bg03.jpg'])
+        scene.addChild(bg);
+        
+        //Label creation
+        scene.addChild(makeMessage("This is Scene 2."));
+        scene.addChild(makeReturn(0));
+        return scene;
+    };
+    
+    //Start game
+    game.start();
+};
+
+//Background creation
+function makeBackground(image) {
+    var bg = new Sprite(320, 320);
+    bg.image = image;
+    return bg;
+}
+//Message creation
+function makeMessage(text) {
+    var label = new Label(text);
+    label.font  = "16px monospace";
+    label.color = "rgb(255,255,255)";
+    label.backgroundColor = "rgba(0,0,0,0.6)";
+    label.y     = 320 - 32 * 3;
+    label.width = 320;
+    label.height = 32 * 3;
+    return label;
+}
+
+//Choice button creation
+function makeSelect(text, y) {
+    var label = new Label(text);
+    label.font  = "16px monospace";
+    label.color = "rgb(255,200,0)";
+    label.y     = y;
+    label.width = 320;
+    return label;
+}
+
+//Return button creation
+function makeReturn(lineNumber) {
+    var game = enchant.Game.instance;
+    var returnLabel = makeSelect("【Return】", 320 - 32 * (2-lineNumber));
+    returnLabel.addEventListener(Event.TOUCH_START, function(e) {
+        game.popScene();
+    });
+    return returnLabel;
+}
+
+
+Listing 4-2. Apple-Catching Game
+enchant();
+window.onload = function() {
+    //Game object creation
+    var game = new Core(320, 320);
+    game.fps = 16;
+    game.score = 0;
+    var label;
+    var bear;
+
+    //Image loading
+    game.preload('chara1.gif',
+        'http://enchantjs.com/assets/images/map0.gif',
+        'http://enchantjs.com/assets/images/icon0.gif');
+
+    //Called when the loading is complete
+    game.onload = function() {
+        //Background creation
+        var bg = new Sprite(320, 320);
+        bg.backgroundColor = "rgb(0, 200, 255)";
+        var maptip = game.assets['http://enchantjs.com/assets/images/map0.gif'];
+        var image = new Surface(320, 320);
+        for (var i = 0; i < 320; i += 16) {
+            image.draw(maptip, 7 * 16, 0, 16, 16, i, 320 - 16, 16, 16);
+        }
+        bg.image = image;
+        game.rootScene.addChild(bg);
+        
+        //Virtual pad creation
+        var pad = new Pad();
+        pad.x   = 0;
+        pad.y   = 220;
+        game.rootScene.addChild(pad);
+        
+        //Label creation
+        label = new Label("");
+        game.rootScene.addChild(label);
+
+        //Bear creation
+        bear = new Sprite(32, 32);
+        bear.image  = game.assets['chara1.gif'];
+        bear.x      = 160 - 16;
+        bear.y      = 320 - 16 - 32;
+        bear.anim   = [10, 11, 10, 12];
+        bear.frame  = bear.anim[0];
+        game.rootScene.addChild(bear);
+        
+        //Periodic processing of the bear sprite
+        bear.addEventListener(Event.ENTER_FRAME, function() {
+            //Left
+            if (game.input.left)  {
+                bear.x -= 3;
+                bear.scaleX = -1;
+            }
+            //Right
+            else if (game.input.right) {
+                bear.x += 3;
+                bear.scaleX =  1;
+            }
+            
+            //Frame settings
+            if (!game.input.left && !game.input.right) {
+                bear.frame = bear.anim[0];            
+            } else {
+                bear.frame = bear.anim[bear.age %  bear.anim.length];            
+            }
+        });
+    };
+    
+    //Adds an apple
+    game.addApple = function(x, speed) {
+        //Create apple
+        var apple = new Sprite(16, 16);
+        apple.image = game.assets['http://enchantjs.com/assets/images/icon0.gif'];
+        apple.x = x;
+        apple.y = -16;
+        apple.frame = 15;
+        apple.speed = speed;
+        game.rootScene.addChild(apple);
+        
+        //Periodic processing of the sprite
+        apple.addEventListener(Event.ENTER_FRAME, function() {
+            apple.y += apple.speed;
+            //Collision with the bear
+            
+            //Collision with the ground
+            else if (apple.y > 320 - 32) {
+                game.rootScene.removeChild(apple); 
+            }
+        });
+    };
+    
+    //Periodic processing of the scene
+    game.framesLeft = 10*game.fps; // 10 seconds
+    game.rootScene.addEventListener(Event.ENTER_FRAME, function() {
+        game.framesLeft--;
+        if (game.framesLeft > 0) {
+            //Apple creation
+            if ((game.frame % 10) === 0) {
+                var x     = rand(300);
+                var speed = 3 + rand(6);
+                game.addApple(x,speed);
+            }
+            label.text = "Time left:" + Math.floor(game.framesLeft / game.fps)  + 
+                "<BR />Score:" + game.score;
+        } else {
+            //Display Game Over
+            game.end(game.score, "Your score is " + game.score);
+        }
+    });
+    
+    //Start game
+    game.start();
+};
+
+//Generates a random number
+function rand(num){
+    return Math.floor(Math.random() * num);
+}
+
+
+Listing 4-3. Adding the nineleap.enchant.js Plug-In
+<script src='/static/enchant.js-latest/plugins/nineleap.enchant.js'></script>
+
+
+Listing 4-4. Using the Score-Sharing Screen
+game.end(game.score, "Your score is " + game.score);
+
+
+Listing 4-4. Using within()
+if (bear.within(apple, 16)) {
+    game.score+=30;
+    game.rootScene.removeChild(apple); 
+}
+
+
+Listing 4-5. Basics of the Sidescroller
+var DIR_LEFT  = 0;
+var DIR_RIGHT = 1;
+var DIR_UP    = 2;
+var DIR_DOWN  = 3;
+
+enchant();
+window.onload = function() {
+    var game = new Core(320, 320);
+    game.fps = 16;
+    game.preload(
+        'http://enchantjs.com/assets/images/map0.gif', 
+        'http://enchantjs.com/assets/images/chara0.gif');
+
+    game.onload = function() {
+        var player = new Sprite(32, 32);
+        player.image = game.assets['http://enchantjs.com/assets/images/chara0.gif'];
+        player.x = 2 * 16;
+        player.y = 16;
+        player.dir   = DIR_DOWN;
+        player.anim  = [
+             9, 10, 11, 10, //Left
+            18, 19, 20, 19, //Right
+            27, 28, 29, 28, //Up
+             0,  1,  2,  1];//Down
+        
+        
+            
+            //Frame setting
+            if (!game.input.up && !game.input.down && 
+                !game.input.left && !game.input.right) player.age = 1;//Standing Still
+            player.frame = player.anim[player.dir * 4 + (player.age % 4)];
+            
+
+        });
+
+        var pad = new Pad();
+        pad.y = 220;
+        game.rootScene.addChild(pad);
+
+
+    };
+    game.start();
+};
+
+
+Listing 4-6. Creating the Map Object
+var map = new Map(16, 16);
+map.image = game.assets['http://enchantjs.com/assets/images/map0.gif'];
+
+
+Listing 4-7. Loading in Tile Data
+ map.loadData([
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0],
+[0,2,2,2,2,0,0,2,2,2,2,2,2,2,2,0,0,0,2,2,2,2,0],
+[0,2,2,2,2,0,0,2,2,2,2,2,2,2,2,0,0,0,2,2,2,2,0],
+[0,0,2,2,0,0,0,2,2,0,0,0,0,2,2,0,0,0,0,2,2,0,0],
+[0,0,2,2,0,0,0,2,2,0,0,0,0,2,2,0,0,0,0,2,2,0,0],
+[0,0,2,2,0,0,0,2,2,0,0,0,0,0,0,0,0,2,2,2,2,0,0],
+[0,0,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,2,2,2,2,0,0],
+[0,0,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,2,2,0,0,0,0],
+[0,0,0,0,0,2,2,0,0,0,0,0,2,2,2,2,2,2,2,0,0,0,0],
+[0,0,0,0,0,2,2,0,0,0,0,0,2,2,2,2,2,2,2,0,0,0,0],
+[0,0,0,2,2,2,2,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,0],
+[0,0,2,2,2,2,2,0,0,0,0,0,2,2,2,2,2,2,2,2,2,0,0],
+[0,0,2,2,2,0,0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,0,0],
+[0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0],
+[0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,0],
+[0,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0],
+[0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,2,2,2,2,0],
+[0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,2,2,2,2,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+],[
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,18,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,23,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,23,-1,-1,-1,-1,-1,-1,23],
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,23],
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1, 1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,18,-1,-1,-1,-1,-1, 1, 1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,23,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,25,-1,-1],
+[-1,23,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
+]);
+
+
+Listing 4-8. Setting Collision Data
+map.collisionData = [
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1],
+    [1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,1],
+    [1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,1],
+    [1,1,0,0,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,0,0,1,1],
+    [1,1,0,0,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,0,0,1,1],
+    [1,1,0,0,1,1,1,0,0,1,1,1,1,1,1,1,1,0,0,0,0,1,1],
+    [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,1,1],
+    [1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1,1,1],
+    [1,1,1,1,1,0,0,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,1,1,0,0,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1],
+    [1,1,1,0,0,0,0,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1],
+    [1,1,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1],
+    [1,1,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1],
+    [1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1],
+    [1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1],
+    [1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1],
+    [1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+];
+
+
+Listing 4-9. Character Movement with Map Collision Detection
+player.addEventListener(Event.ENTER_FRAME, function() {
+    //Move up
+    if (game.input.up) {
+        player.dir = DIR_UP;
+        player.y -= 4;
+        if (map.hitTest(player.x + 16, player.y + 32)) player.y += 4;
+    }
+    //Move down
+    else if (game.input.down) {
+        player.dir = DIR_DOWN;
+        player.y += 4;
+        if (map.hitTest(player.x + 16, player.y + 32)) player.y -= 4;
+    } 
+    //Move left
+    else if (game.input.left) {
+        player.dir = DIR_LEFT;
+        player.x -= 4;
+        if (map.hitTest(player.x + 16, player.y + 32)) player.x += 4;
+    }
+    //Move right
+    else if (game.input.right) {
+        player.dir = DIR_RIGHT;
+        player.x += 4;
+        if (map.hitTest(player.x + 16, player.y + 32)) player.x -= 4;
+    } 
+    
+    //Frame setting
+    if (!game.input.up && !game.input.down && 
+        !game.input.left && !game.input.right) player.age = 1;//Standing Still
+    player.frame = player.anim[player.dir * 4 + (player.age % 4)];
+
+}); 
+
+
+Listing 4-10. Combining the Map and Player into a Group
+var stage = new Group();
+stage.addChild(map);
+stage.addChild(player);
+game.rootScene.addChild(stage);
+2.	Set the map to scroll with the player by typing in the code in Listing 4-11 after game.rootScene.addChild(pad);.
+
+
+Listing 4-11. Scrolling the Map
+game.rootScene.addEventListener(Event.ENTER_FRAME, function(e) {
+    //Set stage XY coordinates
+    var x = Math.min((game.width  - 16) / 2 - player.x, 0);
+    var y = Math.min((game.height - 16) / 2 - player.y, 0);
+    x = Math.max(game.width,  x + map.width)  - map.width;
+    y = Math.max(game.height, y + map.height) - map.height;
+    stage.x = x;
+    stage.y = y;
+});
+
+
+Listing 4-12. Creating a Function to Calculate Length
+function calcLen(x0, y0, x1, y1) {
+    return Math.sqrt((x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1));
+}
+
+
+Listing 4-13. Checking for Collision with the Treasure Chest
+if (calcLen(player.x + 16, player.y + 16, 20 * 16 + 8, 17 * 16 + 8) <= 16) {
+    game.end(0, "Goal");
+} 
+
+
+Listing 4-14. Banana Game
+enchant();
+window.onload = function() {
+    //Game object creation
+    var game = new Core(320, 320);
+    game.fps = 16;
+    game.score = 0;
+    game.bananaNum = 10;
+    game.time = 0;
+    
+    //Sound and image loading
+    game.preload(['se1.wav',
+                  'http://enchantjs.com/assets/images/icon0.gif',
+                  'http://enchantjs.com/assets/images/map0.gif']);
+
+    //Called when the loading is complete
+    game.onload = function() {
+        
+        //Background creation
+        var bg = new Sprite(320, 320);
+        var maptip = game.assets['http://enchantjs.com/assets/images/map0.gif'];
+        var image = new Surface(320, 320);
+        for (var j = 0; j < 320; j += 16) {
+            for (var i = 0; i < 320; i += 16) {
+                image.draw(maptip, 16 * 2, 0, 16, 16, i, j, 16, 16);
+            }
+        }
+        bg.image = image;
+        game.rootScene.addChild(bg);
+        
+        //Add bananas
+        for (var k = 0; k < 10; k++) game.addBanana();
+        
+        //Add skull
+        game.addDokuro();
+        
+        //Periodic scene processing
+        game.rootScene.addEventListener(Event.ENTER_FRAME, function(){
+            game.time ++;
+        });
+    };
+    
+    //Adds a skull
+    game.addDokuro = function(){
+        var dokuro = new Sprite(16, 16);
+        dokuro.x = rand(260) + 20;
+        dokuro.y = rand(260) + 20;
+        dokuro.image = game.assets['http://enchantjs.com/assets/images/icon0.gif'];
+        dokuro.frame = 11;
+        dokuro.addEventListener(Event.TOUCH_START, function(e) {
+            game.end(0, "Game Over");
+        });
+        game.rootScene.addChild(dokuro);
+    };
+    
+    //Adds a banana
+    game.addBanana = function(){
+        var banana = new Sprite(16, 16);
+        banana.x = rand(260) + 20;
+        banana.y = rand(260) + 20;
+        banana.image = game.assets['http://enchantjs.com/assets/images/icon0.gif'];
+        banana.frame = 16;
+   
+        //Event handling when the banana is touched
+        banana.addEventListener(Event.TOUCH_START, function(e) {
+            game.rootScene.removeChild(this);
+
+            game.bananaNum--;
+            if (game.bananaNum === 0){
+                game.end(1000000 - game.time,
+                    (game.time / game.fps).toFixed(2) + " seconds to Clear!");
+            }
+        });
+        game.rootScene.addChild(banana);
+    };
+    
+    //Start game
+    game.start();
+};
+
+//Generates a random number
+function rand(num){
+    return Math.floor(Math.random() * num);
+}
+
+
+Listing 4-15. Creating a Sound Object
+game.se = game.assets['se1.wav'];
+
+
+Listing 4-16. Playing a Sound
+game.se.play();

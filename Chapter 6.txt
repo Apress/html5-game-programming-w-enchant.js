@@ -1,0 +1,437 @@
+Listing 6-1. Groundwork of the Arcade Shooter
+enchant();
+//Class Definitions
+
+window.onload = function() {
+    game = new Core(320, 320);
+    //Game Properties
+    game.fps = 24; 
+
+    game.onload = function() {
+    };
+
+    game.start();
+};
+
+
+Listing 6-2. Creating a Black Background
+//In-Game Variables and Properties
+game.rootScene.backgroundColor = 'black';
+
+
+Listing 6-3. Creating a Score Variable
+game.score = 0;
+
+
+Listing 6-4. Creating and Adding a Score Label to RootScene
+scoreLabel = new ScoreLabel(8, 8);
+game.rootScene.addChild(scoreLabel);
+
+
+Listing 6-5. Player Class
+// Player class
+var Player = enchant.Class.create(enchant.Sprite, {
+    initialize: function(x, y){
+
+    }
+});
+
+
+Listing 6-6. Preloading Images
+game.preload('graphic.png'); 
+ 
+
+Listing 6-7. Specifying Size and Image
+enchant.Sprite.call(this, 16, 16);
+this.image = game.assets['graphic.png'];
+
+
+Listing 6-8. Setting Location and Frame
+this.x = x; 
+this.y = y; 
+this.frame = 0;
+
+
+Listing 6-9. Keeping Track of Touch
+game.touched = false;
+
+
+Listing 6-10. Adding the Touchstart Event Listener
+game.rootScene.addEventListener('touchstart',
+        function(e){ player.y = e.y; game.touched = true; });
+
+
+Listing 6-11. Additional Event Listeners
+game.rootScene.addEventListener('touchend',
+        function(e){ player.y = e.y; game.touched = false; });
+game.rootScene.addEventListener('touchmove',
+        function(e){ player.y = e.y; });
+
+
+Listing 6-12. Adding Player to rootScene
+game.rootScene.addChild(this);
+
+
+Listing 6-13. Creating an Instance of Player
+player = new Player(0, 152);
+
+
+Listing 6-14. Creating the Shoot Class
+// Shoot class
+var Shoot = enchant.Class.create(enchant.Sprite, {
+    initialize: function(x, y, direction){
+    },
+    remove: function(){ 
+    }
+});
+
+
+Listing 6-15. Instance Variables of the Shoot Class
+enchant.Sprite.call(this, 16, 16);
+this.image = game.assets['graphic.png'];
+this.x = x; 
+this.y = y; 
+this.frame = 1;
+this.direction = direction; 
+this.moveSpeed = 10;
+
+
+Listing 6-16. Creating an enterframe Event Listener
+this.addEventListener('enterframe', function(){ 
+        });
+
+
+Listing 6-17. Controlling Movement with Cos and Sin
+this.x += this.moveSpeed * Math.cos(this.direction);
+this.y += this.moveSpeed * Math.sin(this.direction);
+
+
+Listing 6-18. Calling the remove Function
+if(this.y > 320 || this.x > 320 || this.x < -this.width || this.y < -this.height){
+            this.remove();
+}
+
+
+Listing 6-19. The remove Function
+game.rootScene.removeChild(this); 
+delete this;
+
+
+Listing 6-20. Adding Shoot to rootScene
+game.rootScene.addChild(this);
+
+
+Listing 6-21. Creating the PlayerShoot Class
+// PlayerShoot class
+var PlayerShoot = enchant.Class.create(Shoot, { // Succeeds bullet class
+    initialize: function(x, y){
+    }
+});
+
+
+Listing 6-22. Creating as an Instance of the Shoot Class
+Shoot.call(this, x, y, 0);
+
+
+Listing 6-23. Enterframe Event Listener
+this.addEventListener('enterframe', function(){
+});  
+
+
+Listing 6-24. If Statement to Control Shots
+if(game.touched && game.frame % 3 === 0){
+}
+
+
+Listing 6-25. Creating an Instance of PlayerShoot
+var s = new PlayerShoot(this.x, this.y);
+
+
+Listing 6-26. Basic Enemy Class
+//Enemy class
+var Enemy = enchant.Class.create(enchant.Sprite, {
+    initialize: function(x, y){
+    },
+    remove: function(){
+    }
+});
+
+
+Listing 6-27. Making an Instance of Sprite and Assigning Variables
+enchant.Sprite.call(this, 16, 16);
+this.image = game.assets['graphic.png'];
+this.x = x; 
+this.y = y; 
+this.frame = 3;
+
+
+Listing 6-28. Creating Variables for Direction and Movement
+this.direction = 0; 
+this.moveSpeed = 3;
+
+
+Listing 6-29. Moving Enemies
+// Define enemy movement
+this.addEventListener('enterframe', function(){
+this.x -= this.moveSpeed * Math.cos(this.direction);
+this.y += this.moveSpeed * Math.sin(this.direction);
+});
+
+
+Listing 6-30. Removing the Enemy if Outside the Screen
+// Disappear when outside of screen
+if(this.y > 320 || this.x > 320 || this.x < -this.width || this.y < -this.height){
+this.remove();
+}
+
+
+Listing 6-31. Adding Enemy to rootScene
+game.rootScene.addChild(this);
+
+
+Listing 6-31. Remove Function
+game.rootScene.removeChild(this);
+delete enemies[this.key];
+delete this;
+
+
+Listing 6-32. Creating an Enemy Array
+enemies = [];
+
+
+Listing 6-33. Creating Enemies in the Game
+game.rootScene.addEventListener('enterframe', function(){
+    if(Math.random()*100 < 10){
+        var y = Math.random() * 320;
+        var enemy = new Enemy(320, y);
+        enemy.key = game.frame;
+        enemies[game.frame] = enemy;
+    }
+});
+
+
+Listing 6-34. Updating the Game Score Every Frame
+scoreLabel.score = game.score;
+
+
+Listing 6-35. Making PlayerShoot Destroy Enemies
+this.addEventListener('enterframe', function(){
+    // Judges whether or not player’s bullets have hit enemy
+    for(var i in enemies){
+        if(enemies[i].intersect(this)){
+            // Eliminates enemy if hit
+            this.remove(); 
+            enemies[i].remove();
+            //Adds to score
+            game.score += 100;
+        }
+    }
+});
+
+
+Listing 6-36. enemyShoot Class
+// Class for enemy bullets
+var EnemyShoot = enchant.Class.create(Shoot, { // Succeeds bullet class
+    initialize: function(x, y){
+        Shoot.call(this, x, y, Math.PI);
+    }
+});
+
+
+Listing 6-37. Specifying Hits Between playerShoot and player
+this.addEventListener('enterframe', function(){
+    if(player.within(this, 8)){
+        game.end(game.score, "SCORE: " + game.score);
+    }
+});
+
+
+Listing 6-38. Making Enemies Shoot
+// Disappear when outside of screen
+if(this.y > 320 || this.x > 320 || this.x < -this.width || this.y < -this.height){
+    this.remove();
+}else if(this.age % 10 === 0){ // Fire every 10 frames
+    var s = new EnemyShoot(this.x, this.y);
+}
+
+
+Listing 6-39. Adding the theta Variable
+initialize: function(x, y, theta){
+
+
+Listing 6-40. Converting theta to Radians
+this.theta = theta * Math.PI / 180;
+
+
+Listing 6-41. Incrementing Enemy Direction
+this.direction += this.theta;
+
+
+Listing 6-42. Creating Enemies that Arc
+if(rand(100) < 10){
+// Make enemies appear randomly
+var y = rand(320);
+if (y < 160) {
+	theta = 1;
+} else {
+	theta = -1;
+}
+var enemy = new Enemy(320, y, theta);
+enemy.key = game.frame;
+enemies[game.frame] = enemy;
+}
+
+
+Listing 6-43. Blast Class
+// Class for explosions
+var Blast = enchant.Class.create(enchant.Sprite, {
+    initialize: function(x, y){
+    },
+    remove: function(){
+    }
+});
+
+
+Listing 6-45. Preloading the Explosion Image
+game.preload('effect0.gif');
+
+
+Listing 6-46. Specifying effect0.gif as the Blast Image
+this.image = game.assets['effect0.gif'];
+
+
+Listing 6-47. Specifying the Starting frame and duration
+this.frame = 0;
+this.duration = 20;
+
+
+Listing 6-48. Event Listener for Blast
+this.addEventListener('enterframe', function(){
+}
+
+
+Listing 6-49. Assigning a Value to frame
+// Explosion animation
+this.frame = Math.floor(this.age/this.duration * 5);
+
+
+Listing 6-50. Calling the remove function
+if(this.age == this.duration) this.remove();
+
+
+Listing 6-51. Adding Blast to rootScene
+game.rootScene.addChild(this);
+
+
+Listing 6-52. Removing Blast from rootScene
+game.rootScene.removeChild(this);
+
+
+Listing 6-53. Making playerShoot create Instances of Blast
+// PlayerShoot class
+var PlayerShoot = enchant.Class.create(Shoot, { // Succeeds bullet class
+    initialize: function(x, y){
+        Shoot.call(this, x, y, 0);
+        this.addEventListener('enterframe', function(){
+    		// Judges whether or not player’s bullets have hit enemy
+    		for(var i in enemies){
+        	    if(enemies[i].intersect(this)){
+                    //Start Explosion
+                    var blast = new Blast(enemies[i].x,enemies[i].y);
+            		// Eliminates enemy if hit
+            		this.remove(); 
+            		enemies[i].remove();
+            		//Adds to score
+            		game.score += 100;
+        		}
+    		}
+		});
+    }
+});
+
+
+Listing 6-54. Background Class
+// Background class
+var Background = enchant.Class.create(enchant.Sprite, {
+    initialize: function(){
+    }
+});
+
+
+Listing 5-55. Creating as an Instance of Sprite
+enchant.Sprite.call(this,640,320);
+
+
+Listing 6-56. Preloading the Background Image
+game.preload('bg.png');
+
+
+Listing 6-57. Positioning and Image Variables
+this.x = 0;
+this.y = 0;
+this.image = game.assets['bg.png'];
+
+
+Listing 6-58. Moving Background Every Frame
+this.addEventListener('enterframe', function(){
+this.x--;
+});
+
+
+Listing 6-59. Resetting the Position of Background
+if(this.x<=-320) this.x=0;
+
+
+Listing 6-60. Adding Background to rootScene
+game.rootScene.addChild(this); 
+
+
+Listing 6-61. Creating an Instance of Background
+background = new Background();
+
+
+Listing 6-62. Creating a Lives Variable
+game.life = 3;
+
+
+Listing 6-63. Reducing Life When Hit
+// Class for enemy bullets
+var EnemyShoot = enchant.Class.create(Shoot, { // Succeeds bullet class
+    initialize: function(x, y){
+        Shoot.call(this, x, y, Math.PI);
+        this.addEventListener('enterframe', function(){
+            if(player.within(this, 8)){     // Bullet has hit player
+                    game.life--; 
+                }
+        });
+    }
+});
+
+
+Listing 6-64. Ending the Game if No Life
+if(game.life<=0)
+game.end(game.score, “SCORE: “ + game.score);
+
+
+Listing 6-64. Creating the lifeLabel
+game.onload = function() {
+    //In-Game Variables and Properties
+    background = new Background();
+    game.life = 3;
+    
+    scoreLabel = new ScoreLabel(8, 8);
+    game.rootScene.addChild(scoreLabel);
+    player = new Player(0, 152);
+    enemies = [];
+    // Display life
+    lifeLabel = new MutableText(8, 320 - 32, game.width, "");
+
+
+Listing 6-65. Showing Number of Lives
+lifeLabel.addEventListener('enterframe', function(){
+    this.text = "LIFE " + "OOOOOOOOO".substring(0, game.life);
+});
+
+
+Listing 6-66. Adding lifeLabel to rootScene
+game.rootScene.addChild(lifeLabel);

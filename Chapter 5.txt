@@ -1,0 +1,542 @@
+Listing 5-1. Defining the Pit Class
+enchant(); 
+
+Pit = Class.create(Sprite,{ 
+     initialize:function(x,y){
+          //Call the Sprite class (super class) constructor
+          enchant.Sprite.call(this,48,48); 
+          this.image = game.assets['mogura.png'];
+          this.x = x;
+          this.y = y;
+     }
+});
+
+
+Listing 5-2. Creating a Hole on the Screen
+window.onload = function(){
+     game = new Game(320, 320);
+     //Load Droid image
+     game.preload('mogura.png');
+     game.onload = function(){
+          var pit = new Pit(100,100);
+          game.rootScene.addChild(pit);
+    }
+    game.start();
+}
+
+
+Listing 5-3. Updated Pit Class
+Pit = Class.create(Sprite,{ 
+     initialize:function(x,y){
+          //Call the Sprite class (super class) constructor
+          enchant.Sprite.call(this,48,48); 
+          this.image = game.assets['mogura.png'];
+          this.x = x;
+          this.y = y;
+          //Defines an event listener to run every frame
+          this.addEventListener('enterframe',this.tick);
+     },
+     tick:function(){ 
+          this.frame++; 
+          //Loop the animation once complete
+          if(this.frame>=4)this.frame=0;
+     }
+});
+
+
+Listing 5-4. Animating the Pit Class
+Pit = Class.create(Sprite,{ 
+     initialize:function(x,y){
+          //Call the Sprite class (super class) constructor
+          enchant.Sprite.call(this,48,48); 
+          this.image = game.assets['mogura.png'];
+          this.x = x;
+          this.y = y;
+          //Defines an event listener to run every frame
+          this.addEventListener('enterframe',this.tick);
+          //Keeps track of the state of the Droid
+          this.mode = 0;
+     },
+     tick:function(){ 
+          //only change the frame every other frame
+          //the return call ends the function
+          if(game.frame%2!=0)return;
+          switch(this.mode){
+               //Droid is appearing from the hole
+               case 0: 
+                    this.frame++;
+                    //change mode after completely appearing
+                    if(this.frame>=4) this.mode=1;
+                    break;
+               //Droid is hiding in the hole
+               case 1:
+                    this.frame--;
+                    //change mode after completely hiding
+                    if(this.frame<=0) this.mode=0;
+                    break;
+          }
+     }
+});
+
+
+Listing 5-5. Upgrading the Pit Class
+//function to generate random numbers
+rand = function(n){
+     return Math.floor(Math.random()*n);
+}
+
+//Define a class for holes
+Pit = Class.create(Sprite,{ 
+     initialize:function(x,y){
+          //Call the Sprite class (super class) constructor
+          enchant.Sprite.call(this,48,48); 
+          this.image = game.assets['mogura.png'];
+          this.x = x;
+          this.y = y;
+          //Defines an event listener to run every frame
+          this.addEventListener('enterframe',this.tick);
+          //Set the Droid mode to 2 (waiting) in the beginning.
+          this.mode = 2;
+          //Set the next mode as 0 (appearing)
+          this.nextMode = 0;
+          //wait for a random number (0-99) of frames
+          this.waitFor =  game.frame+rand(100);
+     },
+     tick:function(){ 
+          //only change the frame every other frame
+          //the return call ends the function
+          if(game.frame%2!=0)return;
+          switch(this.mode){
+               //Droid is appearing from the hole
+               case 0: 
+                    this.frame++;
+                    if(this.frame>=4) {
+                    //switch to Mode 2 (waiting) after appearing
+                  	this.mode=2;  
+                    //the mode to go to after Mode 2 is Mode 1 (hide)
+                    this.nextMode=1;
+                    //Set a random waiting time for 0 ~ 99 frames
+                    this.waitFor = game.frame+rand(100);	
+          			}
+                    break;
+               //Droid is going to hide in the hole
+               case 1:
+                    this.frame--;
+                    //if Droid is hidden...
+                    if(this.frame<=0){
+                         //Switch to Mode 2 (waiting)
+                         this.mode=2;    
+                         //The next mode should be Mode 0 (appear)
+                         this.nextMode=0;
+                         //Set a random waiting time for 0 ~ 99 frames
+                         this.waitFor = game.frame+rand(100);
+                    }
+                    break;
+               //Droid is waiting
+               case 2:
+                    //if the game's current frame is greater than
+                    //the set frame to wait for...
+                    if(game.frame>this.waitFor){
+                         //Make a transition to the next mode
+                         this.mode = this.nextMode;
+                    }
+                    break;
+          }
+     }
+});
+
+
+Listing 5-6. Implementing the “Whacked” State
+//Define a class for holes
+Pit = Class.create(Sprite,{ 
+     initialize:function(x,y){
+          //Call the Sprite class (super class) constructor
+          enchant.Sprite.call(this,48,48); 
+          this.image = game.assets['mogura.png'];
+          this.x = x;
+          this.y = y;
+          //Defines an event listener to run every frame
+          this.addEventListener('enterframe',this.tick);
+          //Defines an event listener for when the Droid gets whacked
+          this.addEventListener('touchstart',this.hit);
+          //Set the Droid mode to 2 (waiting) in the beginning.
+          this.mode = 2;
+          //Set the next mode as 0 (appearing)
+          this.nextMode = 0;
+          //wait for a random number (0-99) of frames
+          this.waitFor =  game.frame+rand(100);
+     },
+     tick:function(){ 
+          //only change the frame every other frame
+          //the return call ends the function
+          if(game.frame%2!=0)return;
+          switch(this.mode){
+               //Droid is appearing from the hole
+               case 0: 
+                    this.frame++;
+                    if(this.frame>=4) {
+                    //switch to Mode 2 (waiting) after appearing
+                  	this.mode=2;  
+                    //the mode to go to after Mode 2 is Mode 1 (hide)
+                    this.nextMode=1;
+                    //Set a random waiting time for 0 ~ 99 frames
+                    this.waitFor = game.frame+rand(100);	
+          			}
+                    break;
+               //Droid is going to hide in the hole
+               case 1:
+                    this.frame--;
+                    //if Droid is hidden...
+                    if(this.frame<=0){
+                         //Switch to Mode 2 (waiting)
+                         this.mode=2;    
+                         //The next mode should be Mode 0 (appear)
+                         this.nextMode=0;
+                         //Set a random waiting time for 0 ~ 99 frames
+                         this.waitFor = game.frame+rand(100);
+                    }
+                    break;
+               //Droid is waiting
+               case 2:
+                    //if the game's current frame is greater than
+                    //the set frame to wait for...
+                    if(game.frame>this.waitFor){
+                         //Make a transition to the next mode
+                         this.mode = this.nextMode;
+                    }
+                    break;
+          }
+     },
+     //Whack Droid
+     hit:function(){
+          //only when Droid has appeared at least half-way
+          if(this.frame>=2){ 
+               //Droid after being whacked
+               this.frame=5; 
+               //Switch to waiting mode
+               this.mode=2; 
+               this.nextMode=1;
+               //Number of frames to wait is fixed at 10
+               this.waitFor = game.frame+10;
+          }
+     }
+});
+
+
+Listing 5-7. Preventing Looped Hit Animation
+//Define a class for holes
+Pit = Class.create(Sprite,{ 
+     initialize:function(x,y){
+          //Call the Sprite class (super class) constructor
+          enchant.Sprite.call(this,48,48); 
+          this.image = game.assets['mogura.png'];
+          this.x = x;
+          this.y = y;
+          //Defines an event listener to run every frame
+          this.addEventListener('enterframe',this.tick);
+          //Defines an event listener for when the Droid gets whacked
+          this.addEventListener('touchstart',this.hit);
+          //Set the Droid mode to 2 (waiting) in the beginning.
+          this.mode = 2;
+          //Set the next mode as 0 (appearing)
+          this.nextMode = 0;
+          //wait for a random number (0-99) of frames
+          this.waitFor =  game.frame+rand(100);
+          //stores info on whether or not the Droid
+          //has already been whacked
+          this.currentlyWhacked = false; 
+     },
+     tick:function(){ 
+          //only change the frame every other frame
+          //the return call ends the function
+          if(game.frame%2!=0)return;
+          switch(this.mode){
+               //Droid is appearing from the hole
+               case 0: 
+                    this.frame++;
+                    if(this.frame>=4) {
+                    //switch to Mode 2 (waiting) after appearing
+                    this.mode=2;  
+                    //the mode to go to after Mode 2 is Mode 1 (hide)
+                    this.nextMode=1;
+                    //Set a random waiting time for 0 ~ 99 frames
+                    this.waitFor = game.frame+rand(100);    
+                         }
+                    break;
+               //Droid is going to hide in the hole
+               case 1:
+                    this.frame--;
+                    //if Droid is hidden...
+                    if(this.frame<=0){
+                         //Switch to Mode 2 (waiting)
+                         this.mode=2;    
+                         //The next mode should be Mode 0 (appear)
+                         this.nextMode=0;
+                         //Set a random waiting time for 0 ~ 99 frames
+                         this.waitFor = game.frame+rand(100);
+                         //reset flag as the whacked Droid disappears
+                         this.currentlyWhacked = false;
+                    }
+                    break;
+               //Droid is waiting
+               case 2:
+                    //if the game's current frame is greater than
+                    //the set frame to wait for...
+                    if(game.frame>this.waitFor){
+                         //Make a transition to the next mode
+                         this.mode = this.nextMode;
+                    }
+                    break;
+          }
+     },
+     //Whack Droid
+     hit:function(){
+          //Do nothing if the Droid has already been whacked
+          if(this.currentlyWhacked)return;
+          //only when Droid has appeared at least half-way
+          if(this.frame>=2){ 
+               //Set the flag so we know he's been whacked
+               this.currentlyWhacked = true;
+               //Droid after being whacked
+               this.frame=5; 
+               //Switch to waiting mode
+               this.mode=2; 
+               this.nextMode=1;
+               //Number of frames to wait is fixed at 10
+               this.waitFor = game.frame+10;
+          }
+     }
+});       
+
+
+Listing 5-8. Replicating the Droid Hole
+game.onload = function(){
+          //Line up holes in a 4x4 matrix
+          for(var y=0;y<4;y++){
+               for(var x=0;x<4;x++){
+                    var pit = new Pit(x*48+20,y*48+20);
+                    game.rootScene.addChild(pit);
+               }
+          }
+}
+2.	Click Run. A line of Droids appears, as shown in Figure 5-5.
+ 
+
+Listing 5-9. Placing Holes Randomly
+game.onload = function(){
+     for(var i=0;i<7;i++){ 
+          //Place pits randomly
+          var pit = new Pit(rand(300),rand(300)); 
+          game.rootScene.addChild(pit);
+     }
+}
+ 
+
+Listing 5-10. ScoreLabel Class
+//ScoreLabel class definition, extending Label class
+ScoreLabel = Class.create(Label,{
+     initialize:function(x,y){
+          //Call the Label class constructor
+          enchant.Label.call(this,"SCORE:0");
+          this.x=x;
+          this.y=y;
+          this.score = 0;
+     },
+     //Adds points to the score
+     add:function(pts){
+          this.score+=pts;
+          //Change the displayed score
+          this.text="SCORE:"+this.score;
+     }
+});
+
+
+Listing 5-11. Creating a ScoreLabel
+game.onload = function(){
+
+     //Display ScoreLabel 
+     scoreLabel=new ScoreLabel(5,5);
+     game.rootScene.addChild(scoreLabel);
+
+     //Line up holes in a 4x4 matrix
+     for(var y=0;y<4;y++){
+          for(var x=0;x<4;x++){
+               var pit = new Pit(x*48+20,y*48+20);
+               game.rootScene.addChild(pit);
+          }
+     }
+}
+
+
+Listing 5-12. Increasing the Score on a Hit
+//Whack Droid
+hit:function(){
+     //Do nothing if the Droid has already been whacked
+     if(this.currentlyWhacked)return;
+     //only when Droid has appeared at least half-way
+     if(this.frame>=2){ 
+          //Set the flag so we know he's been whacked
+          this.currentlyWhacked = true;
+          //Droid after being whacked
+          this.frame=5; 
+          //Switch to waiting mode
+          this.mode=2; 
+          this.nextMode=1;
+          //Number of frames to wait is fixed at 10
+          this.waitFor = game.frame+10;
+          //Add score
+          scoreLabel.add(1);
+     }
+}
+
+
+Listing 5-13. Limiting Droid Appearances 
+enchant(); 
+//function to generate random numbers
+rand = function(n){
+     return Math.floor(Math.random()*n);
+}
+
+//Number of appearances of the Droid
+maxDroid = 30;
+
+//Total number of Droids
+totalDroid = 16;
+    
+//Define a class for holes
+Pit = Class.create(Sprite,{ 
+     initialize:function(x,y){
+          //Call the Sprite class (super class) constructor
+          enchant.Sprite.call(this,48,48); 
+          this.image = game.assets['mogura.png'];
+          this.x = x;
+          this.y = y;
+          //Defines an event listener to run every frame
+          this.addEventListener('enterframe',this.tick);
+          //Defines an event listener for when the Droid gets whacked
+          this.addEventListener('touchstart',this.hit);
+          //Set the Droid mode to 2 (waiting) in the beginning.
+          this.mode = 2;
+          //Set the next mode as 0 (appearing)
+          this.nextMode = 0;
+          //wait for a random number (0-99) of frames
+          this.waitFor =  game.frame+rand(100);
+          //stores info on whether or not the Droid
+          //has already been whacked
+          this.currentlyWhacked = false; 
+     },
+     tick:function(){ 
+          //only change the frame every other frame
+          //the return call ends the function
+          if(game.frame%2!=0)return;
+          switch(this.mode){
+               //Droid is appearing from the hole
+               case 0: 
+                    this.frame++;
+                    if(this.frame>=4) {
+                    //switch to Mode 2 (waiting) after appearing
+                    this.mode=2;  
+                    //the mode to go to after Mode 2 is Mode 1 (hide)
+                    this.nextMode=1;
+                    //Set a random waiting time for 0 ~ 99 frames
+                    this.waitFor = game.frame+rand(100);    
+                         }
+                    break;
+               //Droid is going to hide in the hole
+               case 1:
+                    this.frame--;
+                    //if Droid is hidden...
+                    if(this.frame<=0){
+                         //Switch to Mode 2 (waiting)
+                         this.mode=2;    
+                         //The next mode should be Mode 0 (appear)
+                         this.nextMode=0;
+                         //Set a random waiting time for 0 ~ 99 frames
+                         this.waitFor = game.frame+rand(100);
+                         //reset flag as the whacked Droid disappears
+                         this.currentlyWhacked = false;
+
+                         //Reduce maximum amount of Droids
+                         maxDroid--;
+                         //If the amount is exceeded the Droid should not appear
+                        if(maxDroid<=0) { 
+                            this.mode=3;
+                            if(maxDroid <= -1*totalDroid + 1) {
+                                game.end(scoreLabel.score, scoreLabel.text);
+                            }
+                        } 
+                    }
+                    break;
+               //Droid is waiting
+               case 2:
+                    //if the game's current frame is greater than
+                    //the set frame to wait for...
+                    if(game.frame>this.waitFor){
+                         //Make a transition to the next mode
+                         this.mode = this.nextMode;
+                    }
+                    break;
+          }
+     },
+     //Whack Droid
+     hit:function(){
+          //Do nothing if the Droid has already been whacked
+          if(this.currentlyWhacked)return;
+          //only when Droid has appeared at least half-way
+          if(this.frame>=2){ 
+               //Set the flag so we know he's been whacked
+               this.currentlyWhacked = true;
+               //Droid after being whacked
+               this.frame=5; 
+               //Switch to waiting mode
+               this.mode=2; 
+               this.nextMode=1;
+               //Number of frames to wait is fixed at 10
+               this.waitFor = game.frame+10;
+               //Add score
+               scoreLabel.add(1);
+          }
+     }
+});                   
+
+//ScoreLabel class definition, extending Label class
+ScoreLabel = Class.create(Label,{
+     initialize:function(x,y){
+          //Call the Label class constructor
+          enchant.Label.call(this,"SCORE:0");
+          this.x=x;
+          this.y=y;
+          this.score = 0;
+     },
+     //Adds points to the score
+     add:function(pts){
+          this.score+=pts;
+          //Change the displayed score
+          this.text="SCORE:"+this.score;
+     }
+});
+         
+         
+//Initialization
+window.onload = function(){
+     game = new Game(320, 320);
+     //Load Droid image
+     game.preload('mogura.png');
+     game.onload = function(){
+
+          //Display ScoreLabel 
+          scoreLabel=new ScoreLabel(5,5);
+          game.rootScene.addChild(scoreLabel);
+
+          //Line up holes in a 4x4 matrix
+          for(var y=0;y<4;y++){
+               for(var x=0;x<4;x++){
+                    var pit = new Pit(x*48+20,y*48+20);
+                    game.rootScene.addChild(pit);
+               }
+          }
+     }
+
+
+     game.start();
+};

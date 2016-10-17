@@ -1,0 +1,400 @@
+Listing 3-1. Initializing the enchant.js Library
+
+
+Listing 3-2. Creating window.onload()
+window.onload = function() {
+}
+
+
+Listing 3-3. Creating the Core Object
+window.onload = function() {
+var game = new Core(320, 320);
+}
+
+
+Listing 3-4. Starting the Game
+game.start();
+
+
+Listing 3-5. Creating a Label
+var label = new Label(“Hello World!”);
+
+
+Listing 3-6. Adding the Label to the rootScene
+game.rootScene.addChild(label);
+
+
+Listing 3-7. Changing Properties of a Label
+label.font = "16px sans-serif";
+label.color = “rgb(255,0,0)”;
+label.x = 50;
+label.y = 100;
+
+
+Listing 3-8 Creating the addLabel Function
+game.addLabel = function(text, color, x, y) {
+var label = new Label(text);
+label.font = "16px sans-serif";
+label.color = color;
+label.x = x;
+label.y = y;
+game.rootScene.addChild(label);
+};
+
+Listing 3-9. Calling addLabel
+game.addLabel(“50 Points”, “rgb(255,0,0)”, 50, 50);
+game.addLabel(“100 Points”, “rgb(50,0,100)”, 50, 200);
+
+
+Listing 3-10. A Random Number Function
+function rand(num){
+return Math.floor(Math.random() * num);
+}
+
+
+Listing 3-11. The ENTER_FRAME Event Listener
+game.rootScene.addEventListener(Event.ENTER_FRAME, function() { 
+});
+
+
+Listing 3-12. Creating Variables and Assigning Random Values
+var score = rand(100);
+var r = rand(256);
+var g = rand(256);
+var b = rand(256);
+var x = rand(300);
+var y = rand(300);
+
+
+Listing 3-13. Calling the addLabel() Function.
+game.addLabel(score + " Points", "rgb(" + r + "," + g + "," + b + ")", x, y);
+
+
+Listing 3-14. Controlling Frequency of Label Creation
+if (game.frame % 3 === 0) {
+var score = rand(100);
+var r = rand(256);
+var g = rand(256);
+var b = rand(256);
+var x = rand(300);
+var y = rand(300);
+game.addLabel(score + " Points", "rgb(" + r + "," + g + "," + b + ")", x, y);
+}
+
+
+Listing 3-15. Removing the Label
+label.addEventListener(Event.ENTER_FRAME, function() {
+if (label.age > 10) game.rootScene.removeChild(label); 
+});
+
+
+Listing 3-16. Moving the Label
+label.y --;
+
+
+Listing 3-17. Basic Structure of the Bear Game
+enchant();
+window.onload = function() {
+var game = new Core(320, 320);
+game.preload('chara1.gif');
+
+game.onload = function() {
+
+};
+
+game.start();
+};
+
+
+Listing 3-18. Creating the Sprite Variable
+var bear = new Sprite(32, 32);
+
+
+Listing 3-19. Assigning an Image to the Image Property
+bear.image = game.assets['chara1.gif'];
+
+
+Listing 3-20. Making the Bear Visible
+game.rootScene.addChild(bear);
+
+
+Listing 3-21. Assigning the White Bear Frame
+bear.frame = 5;
+
+
+Listing 3-22. Animating the Bear
+bear.frame = [5, 6, 5, 7];
+
+
+Listing 3-23. Slowing Down the Bear Frames
+bear.frame = [5,5,6,6,5,5,7,7];
+
+
+Listing 3-24. Creating an Event Listener on the Bear
+bear.addEventListener(Event.ENTER_FRAME, function() {
+});
+
+
+Listing 3-25. Moving the Bear
+bear.x += 3;
+
+
+Listing 3-26. Constraining Movement with an If Statement
+if (bear.x < 320 - 32) bear.x += 3;
+
+
+Listing 3-27. Inverting the Bear across the X Axis
+bear.scaleX = -1;
+
+
+Listing 3-28. Orienting the Bear
+if (bear.scaleX === 1) {
+bear.x += 3;
+if (bear.x > 320 - 32) bear.scaleX = -1;
+} else {
+bear.x -= 3;
+if (bear.x < 0) bear.scaleX = 1;
+}
+
+
+Listing 3-29. Setting up the Game
+enchant();
+window.onload = function() {
+var game = new Core(320, 320);
+game.fps = 16;
+
+game.preload('http://enchantjs.com/assets/images/map0.gif');
+
+game.start();
+};
+ 
+
+Listing 3-30. Creating Containers
+game.onload = function() {
+var bg = new Sprite(320, 320);
+var maptip = game.assets['http://enchantjs.com/assets/images/map0.gif'];
+var image = new Surface(320, 320);
+};
+
+
+Listing 3-31. Tile Loops
+for (var j = 0; j < 320; j += 16) {
+for (var i = 0; i < 320; i += 16) {
+
+}
+}
+
+
+Listing 3-32. The Draw Command to Copy Tiles
+image.draw(maptip, 0, 0, 16, 16, i, j, 16, 16);
+
+
+Listing 3-33. Adding the Map
+bg.image = image;
+game.rootScene.addChild(bg);
+
+
+Listing 3-34. Creating Directional Constants
+var DIR_LEFT  = 0;
+var DIR_RIGHT = 1;
+var DIR_UP    = 2;
+var DIR_DOWN  = 3;
+
+
+Listing 3-35 Adding chara0.gif to the Images to be Loaded
+game.preload('http://enchantjs.com/assets/images/chara0.gif',
+'http://enchantjs.com/assets/images/map0.gif');
+
+
+Listing 3-36. Creating the Basic Girl Character
+var girl = new Sprite(32, 32);
+girl.image = game.assets['http://enchantjs.com/assets/images/chara0.gif'];
+girl.x     = 160 - 16;
+girl.y     = 160 - 16;
+girl.frame = 7;
+
+
+Listing 3-37. Creating Secondary Properties for the Girl
+girl.toX   = girl.x;
+girl.toY   = girl.y;
+girl.dir   = DIR_DOWN;
+girl.anim  = [
+15, 16, 17, 16, //Left
+24, 25, 26, 24, //Right
+33, 34, 35, 34, //Up
+ 	6,  7,  8,  7];//Down
+game.rootScene.addChild(girl);
+
+
+Listing 3-38. Creating the Event Listener for the Girl
+girl.addEventListener(Event.ENTER_FRAME, function() {
+};
+
+
+Listing 3-39. Processing Upward Movement
+if (girl.y > girl.toY) {
+girl.dir = DIR_UP;
+if (Math.abs(girl.y - girl.toY) < 3) {
+girl.y=girl.toY;
+} else {
+girl.y -= 3;
+} 
+}
+
+
+Listing 3-40. Processing the Other Directions of Movement
+else if (girl.y < girl.toY) {
+girl.dir = DIR_DOWN;
+if (Math.abs(girl.y - girl.toY) < 3) {
+girl.y = girl.toY;
+} else {
+girl.y += 3;
+}
+} 
+
+if (girl.x > girl.toX) {
+girl.dir = DIR_LEFT;
+if (Math.abs(girl.x - girl.toX) < 3) {
+girl.x = girl.toX;
+} else {
+girl.x -= 3;
+}                
+}
+
+else if (girl.x < girl.toX) {
+girl.dir = DIR_RIGHT;
+if (Math.abs(girl.x- girl.toX) < 3) {
+girl.x = girl.toX;
+} else {
+girl.x += 3;
+}
+}
+
+
+Listing 3-41. Animating the Girl
+if (girl.x == girl.toX && girl.y == girl.toY) girl.age = 1;
+girl.frame = girl.anim[girl.dir * 4 + (girl.age % 4)]; 
+
+
+Listing 3-42. Including Event Listeners for Touch
+…if (girl.x == girl.toX && girl.y == girl.toY) girl.age = 1;
+girl.frame = girl.anim[girl.dir * 4 + (girl.age % 4)]; 
+
+});
+
+bg.addEventListener(Event.TOUCH_START, function(e){
+girl.toX = e.x - 16;
+girl.toY = e.y - 16;
+});
+
+bg.addEventListener(Event.TOUCH_MOVE, function(e){
+girl.toX = e.x - 16;
+girl.toY = e.y - 16;
+});        
+};
+game.start();
+};
+
+
+
+Listing 3-43. Foundation of the D-Pad Game
+var STATUS_WAIT = 0;
+var STATUS_WALK = 1;
+var STATUS_JUMP = 2;
+
+enchant();
+window.onload = function() {
+    //create game object
+    var game = new Core(320, 320);
+    game.fps = 16;
+
+    //load images
+    game.preload('http://enchantjs.com/assets/images/chara1.gif',
+        'http://enchantjs.com/assets/images/map0.gif');
+
+    //called when the loading is complete
+    game.onload = function() {
+        //create the background
+        var bg = new Sprite(320, 320);
+        bg.backgroundColor = "rgb(0, 200, 255)";
+        var maptip = game.assets['http://enchantjs.com/assets/images/map0.gif'];
+        var image = new Surface(320, 320);
+        for (var i = 0; i < 320; i += 16) {
+            image.draw(maptip, 3 * 16, 0, 16, 16, i, 320 - 16, 16, 16);
+        }
+        bg.image = image;
+        game.rootScene.addChild(bg);
+        
+        //The d-pad should be created below this line
+
+        //create bear
+        var bear = new Sprite(32, 32);
+        bear.image  = game.assets['http://enchantjs.com/assets/images/chara1.gif'];
+        bear.x      = 160 - 16;
+        bear.y      = 320 - 16 - 32;
+        bear.status = STATUS_WAIT;
+        bear.anim   = [10, 11, 10, 12];
+        bear.frame  = 10;
+        game.rootScene.addChild(bear);
+        
+        //frame loop for the bear
+        bear.addEventListener(Event.ENTER_FRAME, function() {
+ 
+            
+            //frame setting
+            if (bear.status == STATUS_WAIT) {
+                bear.frame = bear.anim[0];            
+            } else if (bear.status == STATUS_WALK) {
+                bear.frame = bear.anim[bear.age % 4];            
+            } else if (bear.status == STATUS_JUMP) {
+                bear.frame = bear.anim[1];            
+            }
+        });
+    };
+    
+    //start game
+    game.start();
+};
+
+
+Listing 3-44. Creating the D-Pad
+var pad = new Pad();
+pad.x   = 0;
+pad.y   = 220;
+game.rootScene.addChild(pad);
+
+
+Listing 3-45. Processing Movement with the D-Pad
+//up
+if (bear.status != STATUS_JUMP) {
+bear.status = STATUS_WAIT;
+if (game.input.up)  {
+bear.status = STATUS_JUMP;
+bear.age = 0;
+}
+}
+
+//left
+if (game.input.left)  {
+bear.x -= 3;
+bear.scaleX = -1;
+if (bear.status != STATUS_JUMP) bear.status = STATUS_WALK;
+}
+
+//right
+else if (game.input.right) {
+bear.x += 3;
+bear.scaleX =  1;
+if (bear.status != STATUS_JUMP) bear.status = STATUS_WALK;
+}
+
+//when jumping
+if (bear.status == STATUS_JUMP) {
+if (bear.age < 8) {
+bear.y -= 8;
+} else if (bear.age < 16) {
+bear.y += 8;
+} else {
+bear.status = STATUS_WAIT;
+}
+}
